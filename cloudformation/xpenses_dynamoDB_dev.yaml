@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "xpenses : dynamoDB tables"
+Resources:
+  DBUSERS:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+#        - AttributeName: "Name"
+#          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      TableName: "dev.users"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  DBACTIVITIES:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+#        - AttributeName: "Name"
+#          AttributeType: "S"
+#        - AttributeName: "Users"
+#          AttributeType: ["S"]
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+      TableName: "dev.activities"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
+
+  DBEXPENSES:
+    Type: "AWS::DynamoDB::Table"
+    Properties:
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+#        - AttributeName: "UserId"
+#          AttributeType: "S"
+#        - AttributeName: "Expenses"
+#          AttributeType: ["N"]
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+        - AttributeName: "UserId"
+          KeyType: "RANGE"
+      TableName: "dev.expenses"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 5
+        WriteCapacityUnits: 5
