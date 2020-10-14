@@ -2,6 +2,7 @@ import logging
 
 from chalice import Chalice
 
+from chalicelib.src.main.expenses import expenses
 from chalicelib.src.main.users import users
 
 app = Chalice(app_name='xpenses')
@@ -18,6 +19,31 @@ def create_users():
 @app.route('/users/{user_id}', methods=['GET'])
 def get_user_by_id(user_id):
     return users.get_user_by_id(user_id)
+
+
+@app.route('/expenses', methods=['POST'])
+def create_expenses():
+    return expenses.create_expenses(app.current_request.json_body)
+
+
+@app.route('/expenses/{expense_id}', methods=['GET'])
+def get_expense_by_id(expense_id):
+    return expenses.get_expense_by_id(expense_id)
+
+
+@app.route('/expenses', methods=['GET'])
+def get_expense_by_user_id():
+    return expenses.get_expenses_by_user_id(app.current_request.query_params)
+
+
+@app.route('/expenses/{expense_id}', methods=['PATCH'])
+def update_expense(expense_id):
+    return expenses.update(expense_id, app.current_request.json_body)
+
+
+@app.route('/expenses/{expense_id}', methods=['DELETE'])
+def delete_expense(expense_id):
+    return expenses.delete_currency(expense_id)
 
 
 # TODO
