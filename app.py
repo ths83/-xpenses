@@ -2,6 +2,7 @@ import logging
 
 from chalice import Chalice
 
+from chalicelib.src.main.activities import activities
 from chalicelib.src.main.expenses import expenses
 from chalicelib.src.main.users import users
 
@@ -10,6 +11,8 @@ app.debug = True
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
+
+# Users
 
 @app.route('/users', methods=['POST'])
 def create_users():
@@ -20,6 +23,8 @@ def create_users():
 def get_user_by_id(user_id):
     return users.get_user_by_id(user_id)
 
+
+# Expenses
 
 @app.route('/expenses', methods=['POST'])
 def create_expenses():
@@ -46,34 +51,28 @@ def delete_expense(expense_id):
     return expenses.delete_currency(expense_id)
 
 
-# TODO
-def add_expenses_to_activity(activity_id, user_id, expenses):
-    pass
-
+# Activities
 
 @app.route('/activities', methods=['POST'])
 def create_activity():
-    # TODO add status field when push to dynamoDB (WAITING FOR USERS, DONE, CANCELLED)
-    # TODO set by default users (me, other one = 2 users)
-    # TODO numbers of restant users
-    pass
+    return activities.create_activities(app.current_request.json_body)
 
 
-# @app.route('/activities/{activity_id}', methods=['GET'])
+@app.route('/activities/{activity_id}', methods=['GET'])
 def get_activity(activity_id):
-    # TODO
-    pass
+    return activities.get_activity_by_id(activity_id)
 
 
-# @app.route('/activities', methods=['GET'])
-def get_activities_by_user_id(user_id):
-    # TODO use query param
-    pass
+@app.route('/activities', methods=['GET'])
+def get_activity_by_creator_id():
+    return activities.get_activities_by_creator_id(app.current_request.query_params)
 
 
-# @app.route('/activities', methods=['PUT'])
-def update_activity():
-    # todo
-    pass
+@app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['PUT'])
+def add_expense_to_activity(activity_id, expense_id):
+    return activities.add_expense_to_activity(activity_id, expense_id)
 
-# todo add dynamoDB lambda event endpoint when activity status == DONE
+
+@app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'])
+def delete_expense_from_activity(activity_id, expense_id):
+    return activities.remove_expense_to_activity(activity_id, expense_id)

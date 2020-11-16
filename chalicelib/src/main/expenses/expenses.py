@@ -32,8 +32,14 @@ def get_expense_by_id(expense_id):
         Key={'id': expense_id}
     )
 
+    response = response.get('Item')
+    if response is None:
+        not_found_message = f"No expense '{expense_id}' found"
+        logging.warning(not_found_message)
+        raise NotFoundError(not_found_message)
+
     logging.info(f"Successfully found expense '{expense_id}'")
-    return response['Item']
+    return response
 
 
 def get_expenses_by_user_id(query_params):
@@ -45,8 +51,8 @@ def get_expenses_by_user_id(query_params):
         KeyConditionExpression=Key('userId').eq(user_id)
     )
 
-    expenses = response['Items']
-    if expenses == 0:
+    expenses = response.get('Items')
+    if len(expenses) == 0:
         not_found_message = f"No expenses found for user '{user_id}'"
         logging.warning(not_found_message)
         raise NotFoundError(not_found_message)
