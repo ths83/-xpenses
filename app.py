@@ -76,3 +76,18 @@ def add_expense_to_activity(activity_id, expense_id):
 @app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'])
 def delete_expense_from_activity(activity_id, expense_id):
     return activities.remove_expense_to_activity(activity_id, expense_id)
+
+
+@app.route('/activities/{activity_id}/users/{user_id}', methods=['PUT'])
+def add_user_to_activity(activity_id, user_id):
+    return activities.add_user_to_activity(activity_id, user_id)
+
+
+@app.route('/activities/{activity_id}/users/{user_id}', methods=['DELETE'])
+def delete_user_from_activity(activity_id, user_id):
+    return activities.remove_user_from_activity(activity_id, user_id)
+
+
+@app.route('/activities', methods=['PUT'])
+def update_activity():
+    return activities.update_user_status(app.current_request.json_body)
