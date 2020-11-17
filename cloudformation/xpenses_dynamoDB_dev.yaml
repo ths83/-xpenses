@@ -7,8 +7,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "Id"
           AttributeType: "S"
-#        - AttributeName: "Name"
-#          AttributeType: "S"
       KeySchema:
         - AttributeName: "Id"
           KeyType: "HASH"
@@ -23,10 +21,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "Id"
           AttributeType: "S"
-#        - AttributeName: "Name"
-#          AttributeType: "S"
-#        - AttributeName: "Users"
-#          AttributeType: ["S"]
       KeySchema:
         - AttributeName: "Id"
           KeyType: "HASH"
@@ -34,6 +28,19 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "createdBy-index"
+          KeySchema:
+            - AttributeName: "createdBy"
+              KeyType: "HASH"
+          Projection:
+            ProjectionType: "KEYS_ONLY"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
 
   DBEXPENSES:
     Type: "AWS::DynamoDB::Table"
@@ -41,10 +48,6 @@ Resources:
       AttributeDefinitions:
         - AttributeName: "Id"
           AttributeType: "S"
-#        - AttributeName: "UserId"
-#          AttributeType: "S"
-#        - AttributeName: "Expenses"
-#          AttributeType: ["N"]
       KeySchema:
         - AttributeName: "Id"
           KeyType: "HASH"
@@ -54,3 +57,18 @@ Resources:
       ProvisionedThroughput:
         ReadCapacityUnits: 5
         WriteCapacityUnits: 5
+      GlobalSecondaryIndexes:
+        - IndexName: "userId-id-index"
+          KeySchema:
+            - AttributeName: "userId"
+              KeyType: "HASH"
+            - AttributeName: "Id"
+              KeyType: "RANGE"
+          Projection:
+            ProjectionType: "ALL"
+          ProvisionedThroughput:
+            ReadCapacityUnits: 5
+            WriteCapacityUnits: 5
+        ProvisionedThroughput:
+          ReadCapacityUnits: 5
+          WriteCapacityUnits: 5
