@@ -7,6 +7,7 @@ from boto3.dynamodb.conditions import Key
 from chalice import Response, NotFoundError
 
 from chalicelib.src.main.commons import request_body_validator, query_params_validator
+from chalicelib.src.main.model.action import Action
 
 DYNAMODB = boto3.resource('dynamodb')
 
@@ -21,7 +22,7 @@ def create_activities(payload):
         "name": payload.get("name"),
         "createdBy": payload.get("createdBy"),
         "expenses": [],
-        "activityStatus": "IN_PROGRESS",
+        "activityStatus": Action.IN_PROGRESS.value,
         "usersStatus": []
     }
 
@@ -116,9 +117,9 @@ def add_user_to_activity(activity_id, user_id):
 
     response = ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
-        UpdateExpression="SET usersStatus = :s",
+        UpdateExpression="SET usersStatus = list_append(usersStatus, :u)",
         ExpressionAttributeValues={
-            ':s': [f"{user_id}/IN_PROGRESS"]
+            ':u': [f"{user_id}/{Action.IN_PROGRESS.value}"]
         },
         ReturnValues="ALL_NEW"
     )
@@ -154,7 +155,7 @@ def remove_user_from_activity(activity_id, user_id):
 def update_user_status(payload):
     global user_id_index, updated_status
 
-    request_body_validator.validate(payload, ('id', 'userId', 'userStatus', 'activityStatus'))
+    request_body_validator.validate(payload, ('id', 'userId', 'userStatus'))
 
     activity = get_activity_by_id(payload.get('id'))
     users_status = activity.get("usersStatus")
@@ -176,33 +177,40 @@ def update_user_status(payload):
         UpdateExpression=f"REMOVE usersStatus[{user_id_index}]"
     )
 
-    response = ACTIVITIES_TABLE.update_item(
+    updated_activity = ACTIVITIES_TABLE.update_item(
         Key={'id': payload.get('id')},
         UpdateExpression="SET usersStatus = list_append(usersStatus, :s)",
         ExpressionAttributeValues={
-            ':s': [f"{payload.get('userId')}/{payload.get('status')}"]
+            ':s': [f"{payload.get('userId')}/{payload.get('userStatus')}"]
         },
         ReturnValues="ALL_NEW"
     )
 
     logging.info(f"Successfully updated user '{payload.get('userId')}' status from activity '{payload.get('id')}'")
 
-    response = update_activity_status(payload, response)
+    updated_activity = updated_activity.get("Attributes")
+
+    closed_activity = close_activity(updated_activity)
+
+    return updated_activity if closed_activity is None else closed_activity
+
+
+def close_activity(activity):
+    users_status = activity.get("usersStatus")
+    for u in users_status:
+        if str(u).endswith(Action.DONE.value):
+            continue
+        else:
+            return None
+
+    response = ACTIVITIES_TABLE.update_item(
+        Key={'id': activity.get('id')},
+        UpdateExpression="set activityStatus = :s",
+        ExpressionAttributeValues={
+            ':s': Action.DONE.value
+        },
+        ReturnValues="ALL_NEW"
+    )
+    logging.info(f"Successfully closed activity '{activity.get('id')}'")
 
     return response.get("Attributes")
-
-
-def update_activity_status(payload, response):
-    activity_status = str(payload.get('activityStatus'))
-    if not activity_status.isspace():
-        response = ACTIVITIES_TABLE.update_item(
-            Key={'id': payload.get('id')},
-            UpdateExpression="set activityStatus = :s",
-            ExpressionAttributeValues={
-                ':s': activity_status
-            },
-            ReturnValues="ALL_NEW"
-        )
-        logging.info(f"Successfully updated activity status '{payload.get('id')}'")
-
-    return response
