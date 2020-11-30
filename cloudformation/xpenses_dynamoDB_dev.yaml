@@ -5,10 +5,10 @@ Resources:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
-        - AttributeName: "Id"
+        - AttributeName: "Name"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "Id"
+        - AttributeName: "Name"
           KeyType: "HASH"
       TableName: "dev.users"
       ProvisionedThroughput:

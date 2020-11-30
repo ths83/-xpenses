@@ -3,11 +3,11 @@ import os
 import uuid
 
 import boto3
-from boto3.dynamodb.conditions import Key
 from chalice import Response, NotFoundError
 
 from chalicelib.src.main.commons import request_body_validator, query_params_validator
 from chalicelib.src.main.model.action import Action
+from chalicelib.src.main.users import users
 
 DYNAMODB = boto3.resource('dynamodb')
 
@@ -49,22 +49,33 @@ def get_activity_by_id(activity_id):
     return response
 
 
-def get_activities_by_creator_id(query_params):
-    query_params_validator.validate(query_params, 'createdBy')
-    user_id = query_params['createdBy']
+def get_activities_by_username(query_params):
+    query_params_validator.validate(query_params, 'username')
+    username = query_params['username']
 
-    response = ACTIVITIES_TABLE.query(
-        IndexName='createdBy-index',
-        KeyConditionExpression=Key('createdBy').eq(user_id)
-    )
-
-    activities = response.get('Items')
-    if len(activities) == 0:
-        not_found_message = f"No activities created by user '{user_id}' found"
+    user = users.get_user_by_name(username)
+    if len(user.get('activities')) == 0:
+        not_found_message = f"No activities registered for user '{username}'"
         logging.warning(not_found_message)
         raise NotFoundError(not_found_message)
 
-    logging.info(f"Successfully found {len(activities)} activities created by user '{user_id}'")
+    response = DYNAMODB.meta.client.batch_get_item(
+        RequestItems={
+            ACTIVITIES_TABLE.name:
+                {
+                    'Keys': [
+                        {
+                            'id': str(activity_id)
+                        }
+                        for activity_id in user.get('activities')
+                    ],
+                },
+        },
+    )
+
+    activities = response.get('Responses').get(ACTIVITIES_TABLE.name)
+
+    logging.info(f"Successfully found {len(activities)} activities created by user '{username}'")
 
     return activities
 
@@ -114,6 +125,8 @@ def add_user_to_activity(activity_id, user_id):
             already_exist_message = f"The user '{user_id}' is already in activity '{activity_id}'"
             logging.warning(already_exist_message)
             return already_exist_message
+
+    users.add_activity(user_id, activity_id)
 
     response = ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
