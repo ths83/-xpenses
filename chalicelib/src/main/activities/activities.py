@@ -17,10 +17,13 @@ ACTIVITIES_TABLE = DYNAMODB.Table(os.environ.get("ACTIVITIES_TABLE"))
 def create_activities(payload):
     request_body_validator.validate(payload, ('name', 'createdBy'))
 
+    owner_username = payload.get("createdBy")
+    activity_id = str(uuid.uuid4())
+
     request = {
-        "id": str(uuid.uuid4()),
+        "id": activity_id,
         "name": payload.get("name"),
-        "createdBy": payload.get("createdBy"),
+        "createdBy": owner_username,
         "expenses": [],
         "activityStatus": Action.IN_PROGRESS.value,
         "usersStatus": []
@@ -29,6 +32,8 @@ def create_activities(payload):
     ACTIVITIES_TABLE.put_item(
         Item=request
     )
+
+    users.add_activity(owner_username, activity_id)
 
     logging.info(f"Successfully created activity '{request['id']}'")
     return Response(body=request, status_code=201)
@@ -75,7 +80,7 @@ def get_activities_by_username(query_params):
 
     activities = response.get('Responses').get(ACTIVITIES_TABLE.name)
 
-    logging.info(f"Successfully found {len(activities)} activities created by user '{username}'")
+    logging.info(f"Successfully found {len(activities)} activities for user '{username}'")
 
     return activities
 

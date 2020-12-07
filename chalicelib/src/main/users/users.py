@@ -2,7 +2,7 @@ import logging
 import os
 
 import boto3
-from chalice import Response
+from chalice import Response, NotFoundError
 
 from chalicelib.src.main.commons import request_body_validator
 
@@ -27,8 +27,16 @@ def get_user_by_name(username):
         Key={'name': username}
     )
 
+    user = response['Item']
+
+    if user is None:
+        not_found_message = f"The user '{username}' does not exist"
+        logging.error(not_found_message)
+        raise NotFoundError(not_found_message)
+
     logging.info(f"Successfully found user '{username}'")
-    return response['Item']
+
+    return user
 
 
 def add_activity(username, activity_id):
@@ -41,7 +49,7 @@ def add_activity(username, activity_id):
             return already_exist_message
 
     response = USERS_TABLE.update_item(
-        Key={'id': activity_id},
+        Key={'name': username},
         UpdateExpression="SET activities = list_append(activities, :act)",
         ExpressionAttributeValues={
             ':act': [f"{activity_id}"]

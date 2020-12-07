@@ -15,7 +15,7 @@ EXPENSES_TABLE = DYNAMODB.Table(os.environ.get("EXPENSES_TABLE"))
 
 
 def create_expenses(payload):
-    request_body_validator.validate(payload, ('currency', 'amount', 'userId'))
+    request_body_validator.validate(payload, ('currency', 'amount', 'username'))
     payload['id'] = str(uuid.uuid4())
     payload['amount'] = Decimal(payload['amount'])
 
@@ -43,21 +43,21 @@ def get_expense_by_id(expense_id):
 
 
 def get_expenses_by_user_id(query_params):
-    query_params_validator.validate(query_params, 'userId')
-    user_id = query_params['userId']
+    query_params_validator.validate(query_params, 'username')
+    username = query_params['username']
 
     response = EXPENSES_TABLE.query(
         IndexName='userId-id-index',
-        KeyConditionExpression=Key('userId').eq(user_id)
+        KeyConditionExpression=Key('userId').eq(username)
     )
 
     expenses = response.get('Items')
     if len(expenses) == 0:
-        not_found_message = f"No expenses found for user '{user_id}'"
+        not_found_message = f"No expenses found for user '{username}'"
         logging.warning(not_found_message)
         raise NotFoundError(not_found_message)
 
-    logging.info(f"Successfully found {len(expenses)} expenses '{user_id}'")
+    logging.info(f"Successfully found {len(expenses)} expenses for user '{username}'")
 
     return expenses
 

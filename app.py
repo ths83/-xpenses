@@ -14,7 +14,6 @@ logger.setLevel(logging.INFO)
 
 authorizer = CognitoUserPoolAuthorizer('xpensesPool', provider_arns=[os.environ.get("COGNITO_USER_POOL_ARN")])
 
-
 # Users
 
 # @app.route('/users', methods=['POST'], authorizer=authorizer)
