@@ -33,7 +33,7 @@ def get_user_by_id(user_id):
 # @app.route('/expenses', methods=['POST'], authorizer=authorizer)
 @app.route('/expenses', methods=['POST'], cors=True)
 def create_expenses():
-    return expenses.create_expenses(app.current_request.json_body)
+    return expenses.create_expense(app.current_request.json_body)
 
 
 # @app.route('/expenses/{expense_id}', methods=['GET'], authorizer=authorizer)
@@ -78,12 +78,6 @@ def get_activity(activity_id):
 @app.route('/activities', methods=['GET'], cors=True)
 def get_activity_by_username():
     return activities.get_activities_by_username(app.current_request.query_params)
-
-
-# @app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['PUT'], authorizer=authorizer)
-@app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['PUT'], cors=True)
-def add_expense_to_activity(activity_id, expense_id):
-    return activities.add_expense_to_activity(activity_id, expense_id)
 
 
 # @app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'], authorizer=authorizer)

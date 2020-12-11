@@ -7,6 +7,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from chalice import Response, NotFoundError
 
+from chalicelib.src.main.activities import activities
 from chalicelib.src.main.commons import request_body_validator, query_params_validator
 
 DYNAMODB = boto3.resource('dynamodb')
@@ -14,8 +15,8 @@ DYNAMODB = boto3.resource('dynamodb')
 EXPENSES_TABLE = DYNAMODB.Table(os.environ.get("EXPENSES_TABLE"))
 
 
-def create_expenses(payload):
-    request_body_validator.validate(payload, ('currency', 'amount', 'username'))
+def create_expense(payload):
+    request_body_validator.validate(payload, ('currency', 'amount', 'userId', 'activityId'))
     payload['id'] = str(uuid.uuid4())
     payload['amount'] = Decimal(payload['amount'])
 
@@ -23,7 +24,9 @@ def create_expenses(payload):
         Item=payload
     )
 
-    logging.info(f"Successfully created expense '{payload.get('id')}'")
+    activities.add_expense_to_activity(payload.get('activityId'), payload.get('id'))
+
+    logging.info(f"Successfully created expense '{payload.get('id')}' to activity '{payload.get('activityId')}")
     return Response(body=payload, status_code=201)
 
 
