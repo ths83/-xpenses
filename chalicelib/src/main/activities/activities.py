@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+from datetime import datetime
 
 import boto3
 from chalice import Response, NotFoundError
@@ -26,7 +27,8 @@ def create_activities(payload):
         "createdBy": owner_username,
         "expenses": [],
         "activityStatus": Action.IN_PROGRESS.value,
-        "usersStatus": []
+        "usersStatus": [],
+        "date": datetime.now().isoformat()
     }
 
     ACTIVITIES_TABLE.put_item(

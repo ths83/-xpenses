@@ -14,16 +14,17 @@ logger.setLevel(logging.INFO)
 
 authorizer = CognitoUserPoolAuthorizer('xpensesPool', provider_arns=[os.environ.get("COGNITO_USER_POOL_ARN")])
 
+
 # Users
 
 # @app.route('/users', methods=['POST'], authorizer=authorizer)
-@app.route('/users', methods=['POST'], cors=True)
+@app.route('/users', methods=['POST'])
 def create_users():
     return users.create_user(app.current_request.json_body)
 
 
 # @app.route('/users/{user_id}', methods=['GET'], authorizer=authorizer)
-@app.route('/users/{user_id}', methods=['GET'], cors=True)
+@app.route('/users/{user_id}', methods=['GET'])
 def get_user_by_id(user_id):
     return users.get_user_by_name(user_id)
 
@@ -31,31 +32,31 @@ def get_user_by_id(user_id):
 # Expenses
 
 # @app.route('/expenses', methods=['POST'], authorizer=authorizer)
-@app.route('/expenses', methods=['POST'], cors=True)
+@app.route('/expenses', methods=['POST'])
 def create_expenses():
     return expenses.create_expense(app.current_request.json_body)
 
 
 # @app.route('/expenses/{expense_id}', methods=['GET'], authorizer=authorizer)
-@app.route('/expenses/{expense_id}', methods=['GET'], cors=True)
+@app.route('/expenses/{expense_id}', methods=['GET'])
 def get_expense_by_id(expense_id):
     return expenses.get_expense_by_id(expense_id)
 
 
 # @app.route('/expenses', methods=['GET'], authorizer=authorizer)
-@app.route('/expenses', methods=['GET'], cors=True)
+@app.route('/expenses', methods=['GET'])
 def get_expense_by_user_id():
     return expenses.get_expenses_by_user_id(app.current_request.query_params)
 
 
 # @app.route('/expenses/{expense_id}', methods=['PATCH'], authorizer=authorizer)
-@app.route('/expenses/{expense_id}', methods=['PATCH'], cors=True)
+@app.route('/expenses/{expense_id}', methods=['PATCH'])
 def update_expense(expense_id):
     return expenses.update(expense_id, app.current_request.json_body)
 
 
 # @app.route('/expenses/{expense_id}', methods=['DELETE'], authorizer=authorizer)
-@app.route('/expenses/{expense_id}', methods=['DELETE'], cors=True)
+@app.route('/expenses/{expense_id}', methods=['DELETE'])
 def delete_expense(expense_id):
     return expenses.delete_currency(expense_id)
 
@@ -63,42 +64,42 @@ def delete_expense(expense_id):
 # Activities
 
 # @app.route('/activities', methods=['POST'], authorizer=authorizer)
-@app.route('/activities', methods=['POST'], cors=True)
+@app.route('/activities', methods=['POST'])
 def create_activity():
     return activities.create_activities(app.current_request.json_body)
 
 
 # @app.route('/activities/{activity_id}', methods=['GET'], authorizer=authorizer)
-@app.route('/activities/{activity_id}', methods=['GET'], cors=True)
+@app.route('/activities/{activity_id}', methods=['GET'])
 def get_activity(activity_id):
     return activities.get_activity_by_id(activity_id)
 
 
 # @app.route('/activities', methods=['GET'], authorizer=authorizer)
-@app.route('/activities', methods=['GET'], cors=True)
+@app.route('/activities', methods=['GET'])
 def get_activity_by_username():
     return activities.get_activities_by_username(app.current_request.query_params)
 
 
 # @app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'], authorizer=authorizer)
-@app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'], cors=True)
+@app.route('/activities/{activity_id}/expenses/{expense_id}', methods=['DELETE'])
 def delete_expense_from_activity(activity_id, expense_id):
     return activities.remove_expense_to_activity(activity_id, expense_id)
 
 
 # @app.route('/activities/{activity_id}/users/{user_id}', methods=['PUT'], authorizer=authorizer)
-@app.route('/activities/{activity_id}/users/{user_id}', methods=['PUT'], cors=True)
+@app.route('/activities/{activity_id}/users/{user_id}', methods=['PUT'])
 def add_user_to_activity(activity_id, user_id):
     return activities.add_user_to_activity(activity_id, user_id)
 
 
 # @app.route('/activities/{activity_id}/users/{user_id}', methods=['DELETE'], authorizer=authorizer)
-@app.route('/activities/{activity_id}/users/{user_id}', methods=['DELETE'], cors=True)
+@app.route('/activities/{activity_id}/users/{user_id}', methods=['DELETE'])
 def delete_user_from_activity(activity_id, user_id):
     return activities.remove_user_from_activity(activity_id, user_id)
 
 
 # @app.route('/activities', methods=['PUT'], authorizer=authorizer)
-@app.route('/activities', methods=['PUT'], cors=True)
+@app.route('/activities', methods=['PUT'])
 def update_activity():
     return activities.update_user_status(app.current_request.json_body)
