@@ -66,7 +66,7 @@ def delete_expense(expense_id):
 # @app.route('/activities', methods=['POST'], authorizer=authorizer)
 @app.route('/activities', methods=['POST'])
 def create_activity():
-    return activities.create_activities(app.current_request.json_body)
+    return activities.create_activity(app.current_request.json_body)
 
 
 # @app.route('/activities/{activity_id}', methods=['GET'], authorizer=authorizer)

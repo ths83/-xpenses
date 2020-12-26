@@ -27,7 +27,7 @@ def get_user_by_name(username):
         Key={'name': username}
     )
 
-    user = response['Item']
+    user = response.get('Item')
 
     if user is None:
         not_found_message = f"The user '{username}' does not exist"

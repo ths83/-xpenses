@@ -1,6 +1,7 @@
 import logging
 import os
 import uuid
+from datetime import datetime
 from decimal import Decimal
 
 import boto3
@@ -16,15 +17,16 @@ EXPENSES_TABLE = DYNAMODB.Table(os.environ.get("EXPENSES_TABLE"))
 
 
 def create_expense(payload):
-    request_body_validator.validate(payload, ('currency', 'amount', 'userId', 'activityId'))
+    request_body_validator.validate(payload, ('currency', 'amount', 'userId', 'activityId', 'name'))
     payload['id'] = str(uuid.uuid4())
     payload['amount'] = Decimal(payload['amount'])
+    payload['date'] = datetime.now().isoformat()
 
     EXPENSES_TABLE.put_item(
         Item=payload
     )
 
-    activities.add_expense_to_activity(payload.get('activityId'), payload.get('id'))
+    activities.add_expense_to_activity(payload.get('activityId'), payload.get('id'), payload.get('userId'))
 
     logging.info(f"Successfully created expense '{payload.get('id')}' to activity '{payload.get('activityId')}")
     return Response(body=payload, status_code=201)

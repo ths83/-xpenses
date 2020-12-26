@@ -15,7 +15,7 @@ DYNAMODB = boto3.resource('dynamodb')
 ACTIVITIES_TABLE = DYNAMODB.Table(os.environ.get("ACTIVITIES_TABLE"))
 
 
-def create_activities(payload):
+def create_activity(payload):
     request_body_validator.validate(payload, ('name', 'createdBy'))
 
     owner_username = payload.get("createdBy")
@@ -27,7 +27,7 @@ def create_activities(payload):
         "createdBy": owner_username,
         "expenses": [],
         "activityStatus": Action.IN_PROGRESS.value,
-        "usersStatus": [],
+        "usersStatus": [f"{owner_username}/{Action.IN_PROGRESS.value}"],
         "date": datetime.now().isoformat()
     }
 
@@ -87,7 +87,7 @@ def get_activities_by_username(query_params):
     return activities
 
 
-def add_expense_to_activity(activity_id, expense_id):
+def add_expense_to_activity(activity_id, expense_id, user_id):
     response = ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
         UpdateExpression="SET expenses = list_append(expenses, :e)",
@@ -96,6 +96,8 @@ def add_expense_to_activity(activity_id, expense_id):
         },
         ReturnValues="ALL_NEW"
     )
+
+    add_user_to_activity(activity_id, user_id)
 
     logging.info(f"Successfully added expense '{expense_id}' to activity '{activity_id}'")
 
