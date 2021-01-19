@@ -5,34 +5,44 @@ from datetime import datetime
 from decimal import Decimal
 
 import boto3
-from boto3.dynamodb.conditions import Key
 from chalice import Response, NotFoundError
 
 from chalicelib.src.main.activities import activities
-from chalicelib.src.main.commons import request_body_validator, query_params_validator
+from chalicelib.src.main.commons import request_body_validator
 
 DYNAMODB = boto3.resource('dynamodb')
 
 EXPENSES_TABLE = DYNAMODB.Table(os.environ.get("EXPENSES_TABLE"))
 
 
-def create_expense(payload):
-    request_body_validator.validate(payload, ('currency', 'amount', 'userId', 'activityId', 'name'))
-    payload['id'] = str(uuid.uuid4())
-    payload['amount'] = Decimal(payload['amount'])
-    payload['date'] = datetime.now().isoformat()
+def create(payload):
+    currency_field = 'currency'
+    amount_field = 'amount'
+    user_field = 'user'
+    name_field = 'name'
+    activity_id = 'activityId'
 
+    request_body_validator.validate(payload, (currency_field, amount_field, user_field, activity_id, name_field))
+
+    expense_id = str(uuid.uuid4())
     EXPENSES_TABLE.put_item(
-        Item=payload
+        Item={
+            "id": expense_id,
+            "name": payload[name_field],
+            "amount": Decimal(payload[amount_field]),
+            "currency": payload[currency_field],
+            "user": payload[user_field],
+            "date": datetime.now().isoformat()
+        }
     )
 
-    activities.add_expense_to_activity(payload.get('activityId'), payload.get('id'), payload.get('userId'))
+    activities.add_expense(payload.get(activity_id), expense_id, payload.get(user_field))
 
-    logging.info(f"Successfully created expense '{payload.get('id')}' to activity '{payload.get('activityId')}")
+    logging.info(f"Successfully created expense '{payload.get('id')}'")
     return Response(body=payload, status_code=201)
 
 
-def get_expense_by_id(expense_id):
+def get_by_id(expense_id):
     response = EXPENSES_TABLE.get_item(
         Key={'id': expense_id}
     )
@@ -47,47 +57,50 @@ def get_expense_by_id(expense_id):
     return response
 
 
-def get_expenses_by_user_id(query_params):
-    query_params_validator.validate(query_params, 'username')
-    username = query_params['username']
-
-    response = EXPENSES_TABLE.query(
-        IndexName='userId-id-index',
-        KeyConditionExpression=Key('userId').eq(username)
-    )
-
-    expenses = response.get('Items')
-    if len(expenses) == 0:
-        not_found_message = f"No expenses found for user '{username}'"
-        logging.warning(not_found_message)
-        raise NotFoundError(not_found_message)
-
-    logging.info(f"Successfully found {len(expenses)} expenses for user '{username}'")
-
-    return expenses
+# def get_expenses_by_username(query_params):
+#     query_params_validator.validate(query_params, 'username')
+#     username = query_params['username']
+#
+#     response = EXPENSES_TABLE.query(
+#         IndexName='user-id-index',
+#         KeyConditionExpression=Key('user').eq(username)
+#     )
+#
+#     expenses = response.get('Items')
+#     if len(expenses) == 0:
+#         not_found_message = f"No expenses found for user '{username}'"
+#         logging.warning(not_found_message)
+#         raise NotFoundError(not_found_message)
+#
+#     logging.info(f"Successfully found {len(expenses)} expenses for user '{username}'")
+#
+#     return expenses
 
 
 def update(expense_id, request):
-    amount_property = 'amount'
-    currency_property = 'currency'
-    request_body_validator.validate(request, (amount_property, currency_property))
+    name_field = 'name'
+    amount_field = 'amount'
+    currency_field = 'currency'
+    request_body_validator.validate(request, (name_field, amount_field, currency_field))
 
-    response = EXPENSES_TABLE.update_item(
+    get_by_id(expense_id)
+
+    EXPENSES_TABLE.update_item(
         Key={'id': expense_id},
-        UpdateExpression="set amount=:a, currency=:c",
+        UpdateExpression="set name=:n, amount=:a, currency=:c",
         ExpressionAttributeValues={
-            ':a': Decimal(request[amount_property]),
-            ':c': str(request[currency_property])
+            ':n': str(request[name_field]),
+            ':a': Decimal(request[amount_field]),
+            ':c': str(request[currency_field])
         },
-        ReturnValues="ALL_NEW"
     )
 
     logging.info(f"Successfully updated expense '{expense_id}'")
 
-    return response.get("Attributes")
+    return Response(status_code=204, body='')
 
 
-def delete_currency(expense_id):
+def delete(expense_id):
     EXPENSES_TABLE.delete_item(
         Key={'id': expense_id},
     )
@@ -95,4 +108,4 @@ def delete_currency(expense_id):
     success_message = f"Successfully deleted expense '{expense_id}'"
     logging.info(success_message)
 
-    return Response(success_message)
+    return Response(status_code=204, body='')
