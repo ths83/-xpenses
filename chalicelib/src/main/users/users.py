@@ -11,7 +11,7 @@ DYNAMODB = boto3.resource('dynamodb')
 USERS_TABLE = DYNAMODB.Table(os.environ.get("USERS_TABLE"))
 
 
-def create_user(payload):
+def create(payload):
     request_body_validator.validate(payload, ['name'])
     payload['activities'] = []
     USERS_TABLE.put_item(
@@ -19,7 +19,7 @@ def create_user(payload):
     )
 
     logging.info(f"Successfully created user '{payload.get('name')}'")
-    return Response(body=payload, status_code=201)
+    return Response(status_code=201, body=payload)
 
 
 def get_user_by_name(username):
@@ -42,21 +42,20 @@ def get_user_by_name(username):
 def add_activity(username, activity_id):
     user = get_user_by_name(username)
 
-    for a in user.get('activities'):
-        if str(a) is activity_id:
+    for activity in user.get('activities'):
+        if str(activity) is activity_id:
             already_exist_message = f"The user '{user.get('name')}' is already registered to activity '{activity_id}'"
             logging.warning(already_exist_message)
             return already_exist_message
 
-    response = USERS_TABLE.update_item(
+    USERS_TABLE.update_item(
         Key={'name': username},
         UpdateExpression="SET activities = list_append(activities, :act)",
         ExpressionAttributeValues={
             ':act': [f"{activity_id}"]
         },
-        ReturnValues="ALL_NEW"
     )
 
     logging.info(f"Successfully added activity '{activity_id}' to user '{username}'")
 
-    return response.get("Attributes")
+    return Response(status_code=204, body='')
