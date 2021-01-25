@@ -36,10 +36,10 @@ def get_expense_by_id(expense_id):
     return expenses.get_by_id(expense_id)
 
 
-# # TODO only expenses from current user
-# @app.route('/expenses', methods=['GET'], authorizer=authorizer)
-# def get_expense_by_username():
-#     return expenses.get_expenses_by_username(app.current_request.query_params)
+# TODO only expenses from given activity
+@app.route('/expenses', methods=['GET'], authorizer=authorizer)
+def get_expenses_by_activity():
+    return expenses.get_expenses_by_activity(app.current_request.query_params)
 
 
 # Activities

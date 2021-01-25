@@ -3,12 +3,13 @@ import os
 import uuid
 from datetime import datetime
 from decimal import Decimal
+from operator import itemgetter
 
 import boto3
 from chalice import Response, NotFoundError
 
 from chalicelib.src.main.activities import activities
-from chalicelib.src.main.commons import request_body_validator
+from chalicelib.src.main.commons import request_body_validator, query_params_validator
 
 DYNAMODB = boto3.resource('dynamodb')
 
@@ -57,24 +58,36 @@ def get_by_id(expense_id):
     return response
 
 
-# def get_expenses_by_username(query_params):
-#     query_params_validator.validate(query_params, 'username')
-#     username = query_params['username']
-#
-#     response = EXPENSES_TABLE.query(
-#         IndexName='user-id-index',
-#         KeyConditionExpression=Key('user').eq(username)
-#     )
-#
-#     expenses = response.get('Items')
-#     if len(expenses) == 0:
-#         not_found_message = f"No expenses found for user '{username}'"
-#         logging.warning(not_found_message)
-#         raise NotFoundError(not_found_message)
-#
-#     logging.info(f"Successfully found {len(expenses)} expenses for user '{username}'")
-#
-#     return expenses
+def get_expenses_by_activity(query_params):
+    query_params_validator.validate(query_params, 'activityId')
+    activity_id = query_params['activityId']
+
+    activity = activities.get_by_id(activity_id)
+
+    response = DYNAMODB.meta.client.batch_get_item(
+        RequestItems={
+            EXPENSES_TABLE.name:
+                {
+                    'Keys': [
+                        {
+                            'id': str(expense_id)
+                        }
+                        for expense_id in activity.get('expenses')
+                    ],
+                },
+        },
+    )
+
+    expenses = sorted(response.get('Responses').get(EXPENSES_TABLE.name), key=itemgetter('date'), reverse=True)
+
+    if len(expenses) == 0:
+        not_found_message = f"No expenses found for activity '{activity_id}'"
+        logging.warning(not_found_message)
+        raise NotFoundError(not_found_message)
+
+    logging.info(f"Successfully found {len(expenses)} expenses for activity '{activity_id}'")
+
+    return expenses
 
 
 def update(expense_id, request):
