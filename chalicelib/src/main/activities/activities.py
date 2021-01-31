@@ -27,7 +27,7 @@ def create(payload):
         "name": payload.get("name"),
         "createdBy": owner_username,
         "expenses": [],
-        "users": [f"{owner_username}"],
+        "users": [os.environ.get("USER_1"), os.environ.get("USER_2")],
         "date": datetime.now().isoformat()
     }
 
@@ -35,7 +35,8 @@ def create(payload):
         Item=request
     )
 
-    users.add_activity(owner_username, activity_id)
+    users.add_activity(os.environ.get("USER_1"), activity_id)
+    users.add_activity(os.environ.get("USER_2"), activity_id)
 
     logging.info(f"Successfully created activity '{request['id']}'")
     return Response(body=request, status_code=201)
