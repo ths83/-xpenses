@@ -5,10 +5,10 @@ Resources:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
-        - AttributeName: "Name"
+        - AttributeName: "name"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "Name"
+        - AttributeName: "name"
           KeyType: "HASH"
       TableName: "dev.users"
       ProvisionedThroughput:
@@ -19,56 +19,26 @@ Resources:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
-        - AttributeName: "Id"
+        - AttributeName: "id"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "Id"
+        - AttributeName: "id"
           KeyType: "HASH"
       TableName: "dev.activities"
       ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      GlobalSecondaryIndexes:
-        - IndexName: "createdBy-index"
-          KeySchema:
-            - AttributeName: "createdBy"
-              KeyType: "HASH"
-          Projection:
-            ProjectionType: "KEYS_ONLY"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10
 
   DBEXPENSES:
     Type: "AWS::DynamoDB::Table"
     Properties:
       AttributeDefinitions:
-        - AttributeName: "Id"
+        - AttributeName: "id"
           AttributeType: "S"
       KeySchema:
-        - AttributeName: "Id"
+        - AttributeName: "id"
           KeyType: "HASH"
-        - AttributeName: "UserId"
-          KeyType: "RANGE"
       TableName: "dev.expenses"
       ProvisionedThroughput:
-        ReadCapacityUnits: 5
-        WriteCapacityUnits: 5
-      GlobalSecondaryIndexes:
-        - IndexName: "userId-id-index"
-          KeySchema:
-            - AttributeName: "userId"
-              KeyType: "HASH"
-            - AttributeName: "Id"
-              KeyType: "RANGE"
-          Projection:
-            ProjectionType: "ALL"
-          ProvisionedThroughput:
-            ReadCapacityUnits: 5
-            WriteCapacityUnits: 5
-        ProvisionedThroughput:
-          ReadCapacityUnits: 5
-          WriteCapacityUnits: 5
+        ReadCapacityUnits: 10
+        WriteCapacityUnits: 10

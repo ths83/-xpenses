@@ -173,3 +173,17 @@ def delete_user(activity_id, user_id):
     logging.info(f"Successfully deleted user '{user_id}' from activity '{activity_id}'")
 
     return Response(status_code=204, body='')
+
+
+def update(activity_id, payload):
+    get_by_id(activity_id)
+    request_body_validator.validate(payload, ['name', 'createdBy'])
+
+    ACTIVITIES_TABLE.update_item(
+        Key={'id': activity_id},
+        UpdateExpression=f"set name = {payload.get('name')}, createdBy = {payload.get('createdBy')}",
+    ),
+
+    logging.info(f"Successfully updated activity name for activity '{activity_id}'")
+
+    return Response(status_code=204, body='')
