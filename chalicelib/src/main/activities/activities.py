@@ -182,7 +182,10 @@ def update(activity_id, payload):
     activity_name = str(payload.get('activityName'))
     ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
-        UpdateExpression=f"SET activityName = {activity_name}",
+        UpdateExpression=f"SET activityName = :name",
+        ExpressionAttributeValues={
+            ':name': f"{str(activity_name)}"
+        },
     ),
 
     logging.info(f"Successfully updated activity name for activity '{activity_id}'")
