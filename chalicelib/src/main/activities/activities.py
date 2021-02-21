@@ -152,29 +152,6 @@ def add_user(activity_id, user_id):
     return Response(status_code=204, body='')
 
 
-def delete_user(activity_id, user_id):
-    activity = get_by_id(activity_id)
-    users = activity.get("users")
-
-    for u in users:
-        if str(u) == user_id:
-            user_index = users.index(u)
-            break
-    else:
-        not_found_message = f"No user '{user_id}' found in activity '{activity_id}'"
-        logging.warning(not_found_message)
-        raise NotFoundError(not_found_message)
-
-    ACTIVITIES_TABLE.update_item(
-        Key={'id': activity_id},
-        UpdateExpression=f"REMOVE users[{user_index}]"
-    )
-
-    logging.info(f"Successfully deleted user '{user_id}' from activity '{activity_id}'")
-
-    return Response(status_code=204, body='')
-
-
 def update(activity_id, payload):
     get_by_id(activity_id)
     request_body_validator.validate(payload, ['activityName'])
@@ -189,5 +166,21 @@ def update(activity_id, payload):
     ),
 
     logging.info(f"Successfully updated activity name for activity '{activity_id}'")
+
+    return Response(status_code=204, body='')
+
+
+def delete(activity_id):
+    activity = get_by_id(activity_id)
+
+    users.delete_activity_from_all_users(activity_id)
+
+    [expenses.delete(expense_id) for expense_id in activity.get('expenses')]
+
+    ACTIVITIES_TABLE.delete_item(
+        Key={'id': activity_id},
+    )
+
+    logging.info(f"Successfully deleted activity '{activity_id}'")
 
     return Response(status_code=204, body='')

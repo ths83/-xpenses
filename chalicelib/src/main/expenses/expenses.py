@@ -118,7 +118,6 @@ def delete(expense_id):
         Key={'id': expense_id},
     )
 
-    success_message = f"Successfully deleted expense '{expense_id}'"
-    logging.info(success_message)
+    logging.info(f"Successfully deleted expense '{expense_id}'")
 
     return Response(status_code=204, body='')

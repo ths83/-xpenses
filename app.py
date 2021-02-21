@@ -65,13 +65,13 @@ def delete_expense_from_activity(activity_id, expense_id):
     return activities.remove_expense_to_activity(activity_id, expense_id)
 
 
-# TODO only if createdBy user == current user (TBD) (may be deleted)
-@app.route('/activities/{activity_id}/users/{user_id}', methods=['DELETE'], authorizer=authorizer)
-def delete_user_from_activity(activity_id, user_id):
-    return activities.delete_user(activity_id, user_id)
-
-
 # TODO only current user
 @app.route('/activities/{activity_id}', methods=['PUT'], authorizer=authorizer)
 def update_activity(activity_id):
     return activities.update(activity_id, app.current_request.json_body)
+
+
+# TODO only current user
+@app.route('/activities/{activity_id}', methods=['DELETE'], authorizer=authorizer)
+def delete(activity_id):
+    return activities.delete(activity_id)
