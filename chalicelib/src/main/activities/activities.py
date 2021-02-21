@@ -17,14 +17,14 @@ ACTIVITIES_TABLE = DYNAMODB.Table(os.environ.get("ACTIVITIES_TABLE"))
 
 
 def create(payload):
-    request_body_validator.validate(payload, ('name', 'createdBy'))
+    request_body_validator.validate(payload, ('activityName', 'createdBy'))
 
     owner_username = payload.get("createdBy")
     activity_id = str(uuid.uuid4())
 
     request = {
         "id": activity_id,
-        "name": payload.get("name"),
+        "activityName": payload.get("activityName"),
         "createdBy": owner_username,
         "expenses": [],
         "users": [os.environ.get("USER_1"), os.environ.get("USER_2")],
@@ -177,11 +177,12 @@ def delete_user(activity_id, user_id):
 
 def update(activity_id, payload):
     get_by_id(activity_id)
-    request_body_validator.validate(payload, ['name', 'createdBy'])
+    request_body_validator.validate(payload, ['activityName'])
 
+    activity_name = str(payload.get('activityName'))
     ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
-        UpdateExpression=f"set name = {payload.get('name')}, createdBy = {payload.get('createdBy')}",
+        UpdateExpression=f"SET activityName = {activity_name}",
     ),
 
     logging.info(f"Successfully updated activity name for activity '{activity_id}'")

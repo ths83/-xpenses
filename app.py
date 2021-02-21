@@ -16,7 +16,6 @@ authorizer = CognitoUserPoolAuthorizer('xpensesPool', provider_arns=[os.environ.
 
 
 # Users
-
 # TODO only current user
 @app.route('/users/{user_id}', methods=['GET'], authorizer=authorizer)
 def get_user_by_id(user_id):

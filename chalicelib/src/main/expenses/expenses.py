@@ -20,7 +20,7 @@ def create(payload):
     currency_field = 'currency'
     amount_field = 'amount'
     user_field = 'user'
-    name_field = 'name'
+    name_field = 'expenseName'
     activity_id = 'activityId'
 
     request_body_validator.validate(payload, (currency_field, amount_field, user_field, activity_id, name_field))
@@ -29,10 +29,10 @@ def create(payload):
     EXPENSES_TABLE.put_item(
         Item={
             "id": expense_id,
-            "name": payload[name_field],
-            "amount": Decimal(payload[amount_field]),
-            "currency": payload[currency_field],
-            "user": payload[user_field],
+            name_field: payload[name_field],
+            amount_field: Decimal(payload[amount_field]),
+            currency_field: payload[currency_field],
+            user_field: payload[user_field],
             "date": datetime.now().isoformat()
         }
     )
@@ -64,6 +64,11 @@ def get_expenses_by_activity(query_params):
 
     activity = activities.get_by_id(activity_id)
 
+    if len(activity.get('expenses')) == 0:
+        not_found_message = f"No expenses found for activity '{activity_id}'"
+        logging.warning(not_found_message)
+        return []
+
     response = DYNAMODB.meta.client.batch_get_item(
         RequestItems={
             EXPENSES_TABLE.name:
@@ -80,18 +85,13 @@ def get_expenses_by_activity(query_params):
 
     expenses = sorted(response.get('Responses').get(EXPENSES_TABLE.name), key=itemgetter('date'), reverse=True)
 
-    if len(expenses) == 0:
-        not_found_message = f"No expenses found for activity '{activity_id}'"
-        logging.warning(not_found_message)
-        raise NotFoundError(not_found_message)
-
     logging.info(f"Successfully found {len(expenses)} expenses for activity '{activity_id}'")
 
     return expenses
 
 
 def update(expense_id, request):
-    name_field = 'name'
+    name_field = 'expenseName'
     amount_field = 'amount'
     currency_field = 'currency'
     request_body_validator.validate(request, (name_field, amount_field, currency_field))
@@ -100,7 +100,7 @@ def update(expense_id, request):
 
     EXPENSES_TABLE.update_item(
         Key={'id': expense_id},
-        UpdateExpression="set name=:n, amount=:a, currency=:c",
+        UpdateExpression="set expenseName=:n, amount=:a, currency=:c",
         ExpressionAttributeValues={
             ':n': str(request[name_field]),
             ':a': Decimal(request[amount_field]),
