@@ -28,7 +28,7 @@ def create(payload):
         "createdBy": owner_username,
         "expenses": [],
         "users": [os.environ.get("USER_1"), os.environ.get("USER_2")],
-        "date": datetime.now().isoformat()
+        "startDate": datetime.now().isoformat()
     }
 
     ACTIVITIES_TABLE.put_item(
@@ -81,7 +81,7 @@ def get_activities_by_username(query_params):
         },
     )
 
-    activities = sorted(response.get('Responses').get(ACTIVITIES_TABLE.name), key=itemgetter('date'), reverse=True)
+    activities = sorted(response.get('Responses').get(ACTIVITIES_TABLE.name), key=itemgetter('startDate'), reverse=True)
 
     logging.info(f"Successfully found {len(activities)} activities for user '{username}'")
 

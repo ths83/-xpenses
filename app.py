@@ -41,6 +41,12 @@ def get_expenses_by_activity():
     return expenses.get_expenses_by_activity(app.current_request.query_params)
 
 
+# TODO only current user
+@app.route('/expenses/{expense_id}', methods=['PUT'], authorizer=authorizer)
+def update(expense_id):
+    return expenses.update(expense_id, app.current_request.json_body)
+
+
 # Activities
 @app.route('/activities', methods=['POST'], authorizer=authorizer)
 def create_activity():

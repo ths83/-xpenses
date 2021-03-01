@@ -33,7 +33,7 @@ def create(payload):
             amount_field: Decimal(payload[amount_field]),
             currency_field: payload[currency_field],
             user_field: payload[user_field],
-            "date": datetime.now().isoformat()
+            "startDate": datetime.now().isoformat()
         }
     )
 
@@ -83,7 +83,7 @@ def get_expenses_by_activity(query_params):
         },
     )
 
-    expenses = sorted(response.get('Responses').get(EXPENSES_TABLE.name), key=itemgetter('date'), reverse=True)
+    expenses = sorted(response.get('Responses').get(EXPENSES_TABLE.name), key=itemgetter('startDate'), reverse=True)
 
     logging.info(f"Successfully found {len(expenses)} expenses for activity '{activity_id}'")
 
@@ -94,17 +94,19 @@ def update(expense_id, request):
     name_field = 'expenseName'
     amount_field = 'amount'
     currency_field = 'currency'
-    request_body_validator.validate(request, (name_field, amount_field, currency_field))
+    date_field = 'startDate'
+    request_body_validator.validate(request, (name_field, amount_field, currency_field, date_field))
 
     get_by_id(expense_id)
 
     EXPENSES_TABLE.update_item(
         Key={'id': expense_id},
-        UpdateExpression="set expenseName=:n, amount=:a, currency=:c",
+        UpdateExpression="set expenseName=:n, amount=:a, currency=:c, startDate=:d",
         ExpressionAttributeValues={
             ':n': str(request[name_field]),
             ':a': Decimal(request[amount_field]),
-            ':c': str(request[currency_field])
+            ':c': str(request[currency_field]),
+            ':d': str(request[date_field])
         },
     )
 
