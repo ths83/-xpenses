@@ -154,14 +154,17 @@ def add_user(activity_id, user_id):
 
 def update(activity_id, payload):
     get_by_id(activity_id)
-    request_body_validator.validate(payload, ['activityName'])
+    request_body_validator.validate(payload, ['activityName', 'date'])
 
     activity_name = str(payload.get('activityName'))
+    start_date = str(payload.get('date'))
+
     ACTIVITIES_TABLE.update_item(
         Key={'id': activity_id},
-        UpdateExpression=f"SET activityName = :name",
+        UpdateExpression=f"SET activityName = :name, startDate = :date",
         ExpressionAttributeValues={
-            ':name': f"{str(activity_name)}"
+            ':name': f"{activity_name}",
+            ':date': f"{start_date}"
         },
     ),
 
