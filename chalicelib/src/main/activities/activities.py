@@ -9,6 +9,7 @@ from chalice import Response, NotFoundError
 
 from chalicelib.src.main.commons import request_body_validator, query_params_validator
 from chalicelib.src.main.expenses import expenses
+from chalicelib.src.main.model.action import Action
 from chalicelib.src.main.users import users
 
 DYNAMODB = boto3.resource('dynamodb')
@@ -28,7 +29,8 @@ def create(payload):
         "createdBy": owner_username,
         "expenses": [],
         "users": [os.environ.get("USER_1"), os.environ.get("USER_2")],
-        "startDate": datetime.now().isoformat()
+        "startDate": datetime.now().isoformat(),
+        "activityStatus": Action.IN_PROGRESS.value
     }
 
     ACTIVITIES_TABLE.put_item(
@@ -185,5 +187,21 @@ def delete(activity_id):
     )
 
     logging.info(f"Successfully deleted activity '{activity_id}'")
+
+    return Response(status_code=204, body='')
+
+
+def close(activity_id):
+    get_by_id(activity_id)
+
+    ACTIVITIES_TABLE.update_item(
+        Key={'id': activity_id},
+        UpdateExpression=f"SET activityStatus = :status",
+        ExpressionAttributeValues={
+            ':status': Action.DONE.value,
+        },
+    ),
+
+    logging.info(f"Successfully closed activity '{activity_id}'")
 
     return Response(status_code=204, body='')

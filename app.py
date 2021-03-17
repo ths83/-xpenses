@@ -81,3 +81,9 @@ def update_activity(activity_id):
 @app.route('/activities/{activity_id}', methods=['DELETE'], authorizer=authorizer)
 def delete(activity_id):
     return activities.delete(activity_id)
+
+
+# TODO only if current user in activity users
+@app.route('/activities/{activity_id}', methods=['PATCH'], authorizer=authorizer)
+def close(activity_id):
+    return activities.close(activity_id)
