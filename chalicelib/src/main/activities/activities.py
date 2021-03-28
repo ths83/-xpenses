@@ -103,7 +103,7 @@ def add_expense(activity_id, expense_id, user_id):
 
     logging.info(f"Successfully added expense '{expense_id}' to activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def remove_expense_to_activity(activity_id, expense_id):
@@ -126,7 +126,7 @@ def remove_expense_to_activity(activity_id, expense_id):
 
     logging.info(f"Successfully deleted expense '{expense_id}' from activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def add_user(activity_id, user_id):
@@ -151,7 +151,7 @@ def add_user(activity_id, user_id):
 
     logging.info(f"Successfully added user '{user_id}' to activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def update(activity_id, payload):
@@ -172,7 +172,7 @@ def update(activity_id, payload):
 
     logging.info(f"Successfully updated activity name for activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def delete(activity_id):
@@ -188,7 +188,7 @@ def delete(activity_id):
 
     logging.info(f"Successfully deleted activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def close(activity_id):
@@ -204,4 +204,4 @@ def close(activity_id):
 
     logging.info(f"Successfully closed activity '{activity_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)

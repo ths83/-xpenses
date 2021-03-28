@@ -58,7 +58,7 @@ def add_activity(username, activity_id):
 
     logging.info(f"Successfully added activity '{activity_id}' to user '{username}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def delete_activity_from_all_users(activity_id):
@@ -66,7 +66,7 @@ def delete_activity_from_all_users(activity_id):
 
     logging.info(f"Successfully deleted activity '{activity_id}' from associated users")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def delete_activity(activity_id, username):

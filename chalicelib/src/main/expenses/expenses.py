@@ -112,7 +112,7 @@ def update(expense_id, request):
 
     logging.info(f"Successfully updated expense '{expense_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
 
 
 def delete(expense_id):
@@ -122,4 +122,4 @@ def delete(expense_id):
 
     logging.info(f"Successfully deleted expense '{expense_id}'")
 
-    return Response(status_code=204, body='')
+    return Response(status_code=204)
