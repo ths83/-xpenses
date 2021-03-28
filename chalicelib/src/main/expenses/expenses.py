@@ -1,7 +1,6 @@
 import logging
 import os
 import uuid
-from datetime import datetime
 from decimal import Decimal
 from operator import itemgetter
 
@@ -22,8 +21,9 @@ def create(payload):
     user_field = 'user'
     name_field = 'expenseName'
     activity_id = 'activityId'
+    date = "date"
 
-    request_body_validator.validate(payload, (currency_field, amount_field, user_field, activity_id, name_field))
+    request_body_validator.validate(payload, (currency_field, amount_field, user_field, activity_id, name_field, date))
 
     expense_id = str(uuid.uuid4())
     EXPENSES_TABLE.put_item(
@@ -33,7 +33,7 @@ def create(payload):
             amount_field: Decimal(payload[amount_field]),
             currency_field: payload[currency_field],
             user_field: payload[user_field],
-            "startDate": datetime.now().isoformat()
+            "startDate": payload[date]
         }
     )
 
