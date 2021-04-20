@@ -22,8 +22,10 @@ def create(payload):
     name_field = 'expenseName'
     activity_id = 'activityId'
     date = "date"
+    category_field = "category"
 
-    request_body_validator.validate(payload, (currency_field, amount_field, user_field, activity_id, name_field, date))
+    request_body_validator.validate(payload, (
+        currency_field, amount_field, user_field, activity_id, name_field, date, category_field))
 
     expense_id = str(uuid.uuid4())
     EXPENSES_TABLE.put_item(
@@ -33,7 +35,8 @@ def create(payload):
             amount_field: Decimal(payload[amount_field]),
             currency_field: payload[currency_field],
             user_field: payload[user_field],
-            "startDate": payload[date]
+            "startDate": payload[date],
+            category_field: payload[category_field]
         }
     )
 
@@ -95,24 +98,26 @@ def update(expense_id, request):
     amount_field = 'amount'
     currency_field = 'currency'
     date_field = 'startDate'
-    request_body_validator.validate(request, (name_field, amount_field, currency_field, date_field))
+    category_field = 'category'
+    request_body_validator.validate(request, (name_field, amount_field, currency_field, date_field, category_field))
 
     get_by_id(expense_id)
 
     EXPENSES_TABLE.update_item(
         Key={'id': expense_id},
-        UpdateExpression="set expenseName=:n, amount=:a, currency=:c, startDate=:d",
+        UpdateExpression="set expenseName=:n, amount=:a, currency=:c, startDate=:d, category=:cat",
         ExpressionAttributeValues={
             ':n': str(request[name_field]),
             ':a': Decimal(request[amount_field]),
             ':c': str(request[currency_field]),
-            ':d': str(request[date_field])
+            ':d': str(request[date_field]),
+            ':cat': str(request[category_field]),
         },
     )
 
     logging.info(f"Successfully updated expense '{expense_id}'")
 
-    return Response(status_code=204)
+    return Response(status_code=204, body="")
 
 
 def delete(expense_id):
@@ -122,4 +127,4 @@ def delete(expense_id):
 
     logging.info(f"Successfully deleted expense '{expense_id}'")
 
-    return Response(status_code=204)
+    return Response(status_code=204, body="")
